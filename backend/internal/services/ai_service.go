@@ -14,14 +14,28 @@ import (
 
 // HealthMetric represents a single health parameter with scoring
 type HealthMetric struct {
-	Name        string  `json:"name"`
-	Value       string  `json:"value"`
-	Unit        string  `json:"unit"`
-	Score       float64 `json:"score"`       // 0-100 score for speedometer
-	Status      string  `json:"status"`      // "normal", "warning", "critical"
-	RangeMin    float64 `json:"range_min"`   // Normal range minimum
-	RangeMax    float64 `json:"range_max"`   // Normal range maximum
-	Description string  `json:"description"` // Explanation for user
+	Name        string      `json:"name"`
+	Value       interface{} `json:"value"`       // Can be string or number from AI
+	Unit        string      `json:"unit"`
+	Score       float64     `json:"score"`       // 0-100 score for speedometer
+	Status      string      `json:"status"`      // "normal", "warning", "critical"
+	RangeMin    float64     `json:"range_min"`   // Normal range minimum
+	RangeMax    float64     `json:"range_max"`   // Normal range maximum
+	Description string      `json:"description"` // Explanation for user
+}
+
+// GetValueAsString converts the value to string format for display
+func (h *HealthMetric) GetValueAsString() string {
+	switch v := h.Value.(type) {
+	case string:
+		return v
+	case float64:
+		return fmt.Sprintf("%.1f", v)
+	case int:
+		return fmt.Sprintf("%d", v)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
 }
 
 // AnalysisResult contains the complete AI analysis
@@ -185,12 +199,23 @@ func (ai *AIService) generateAnalysis(content string) (*AnalysisResult, error) {
 	return analysis, nil
 }
 
-// buildAnalysisPrompt creates a comprehensive prompt for medical analysis
-func (ai *AIService) buildAnalysisPrompt(content string) string {
-	prompt := fmt.Sprintf(`You are a medical AI assistant specialized in analyzing medical reports and lab results. Please analyze the following medical report and provide a comprehensive analysis in JSON format.
+// loadPromptTemplate loads the medical analysis prompt template from file
+func (ai *AIService) loadPromptTemplate() (string, error) {
+	promptPath := "prompts/medical_analysis_prompt.txt"
+	promptBytes, err := os.ReadFile(promptPath)
+	if err != nil {
+		// Fallback to embedded prompt if file doesn't exist
+		return ai.getDefaultPromptTemplate(), nil
+	}
+	return string(promptBytes), nil
+}
+
+// getDefaultPromptTemplate returns a fallback prompt if file loading fails
+func (ai *AIService) getDefaultPromptTemplate() string {
+	return `You are a medical AI assistant specialized in analyzing medical reports and lab results. Please analyze the following medical report and provide a comprehensive analysis in JSON format.
 
 Medical Report Content:
-%s
+{{REPORT_CONTENT}}
 
 Please provide your analysis in the following JSON structure:
 {
@@ -199,7 +224,7 @@ Please provide your analysis in the following JSON structure:
   "health_metrics": [
     {
       "name": "Parameter name (e.g., Blood Glucose, Cholesterol)",
-      "value": "Measured value",
+      "value": "Measured value (can be number or string)",
       "unit": "Unit of measurement",
       "score": "Score from 0-100 (100 = optimal, 0 = critical)",
       "status": "normal/warning/critical",
@@ -220,9 +245,21 @@ Guidelines:
 4. Be accurate but not alarming in tone
 5. Include lifestyle recommendations when appropriate
 6. If no specific values are found, focus on general health insights
+7. For numeric values, you can return them as numbers in the JSON
 
-Respond only with valid JSON.`, content)
+Respond only with valid JSON.`
+}
 
+// buildAnalysisPrompt creates a comprehensive prompt for medical analysis
+func (ai *AIService) buildAnalysisPrompt(content string) string {
+	promptTemplate, err := ai.loadPromptTemplate()
+	if err != nil {
+		// Use default template if loading fails
+		promptTemplate = ai.getDefaultPromptTemplate()
+	}
+
+	// Replace placeholder with actual content
+	prompt := strings.ReplaceAll(promptTemplate, "{{REPORT_CONTENT}}", content)
 	return prompt
 }
 
@@ -233,15 +270,26 @@ func (ai *AIService) parseAnalysisResponse(response string) (*AnalysisResult, er
 	response = strings.TrimSuffix(response, "```")
 	response = strings.TrimSpace(response)
 
+	// Try to find JSON within the response (sometimes AI adds extra text)
+	jsonStart := strings.Index(response, "{")
+	jsonEnd := strings.LastIndex(response, "}")
+
+	if jsonStart >= 0 && jsonEnd > jsonStart {
+		response = response[jsonStart:jsonEnd+1]
+	}
+
 	var analysis AnalysisResult
 	err := json.Unmarshal([]byte(response), &analysis)
 	if err != nil {
-		// If JSON parsing fails, create a basic analysis
+		// Log the actual response for debugging
+		fmt.Printf("Failed to parse JSON response: %s\nError: %v\n", response, err)
+
+		// If JSON parsing fails, create a fallback analysis with the raw response
 		return &AnalysisResult{
-			Summary:       "Analysis completed but response formatting needs improvement.",
-			SimpleSummary: "Your medical report has been analyzed. Please consult with your healthcare provider for detailed interpretation.",
-			HealthMetrics: []HealthMetric{},
-			KeyFindings:   []string{"Report analysis completed"},
+			Summary:       "AI analysis completed. Raw response formatting required improvement.",
+			SimpleSummary: fmt.Sprintf("Analysis: %s", ai.extractSimpleSummary(response)),
+			HealthMetrics: ai.extractHealthMetrics(response),
+			KeyFindings:   []string{"Report analysis completed", "Response parsing needed enhancement"},
 			Recommendations: []string{"Consult with your healthcare provider for personalized advice"},
 			RiskLevel:     "medium",
 		}, nil
@@ -316,6 +364,27 @@ func (ai *AIService) Close() error {
 		return ai.client.Close()
 	}
 	return nil
+}
+
+// extractSimpleSummary extracts a simple summary from raw AI response
+func (ai *AIService) extractSimpleSummary(response string) string {
+	// Try to extract meaningful content from the response
+	lines := strings.Split(response, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if len(line) > 20 && !strings.HasPrefix(line, "{") && !strings.HasPrefix(line, "}") {
+			// Return first meaningful line as summary
+			return line
+		}
+	}
+	return "Your medical report has been analyzed. Please consult your healthcare provider."
+}
+
+// extractHealthMetrics attempts to extract health metrics from raw response
+func (ai *AIService) extractHealthMetrics(response string) []HealthMetric {
+	// For now, return empty metrics if JSON parsing fails
+	// In the future, we could implement regex parsing to extract numeric values
+	return []HealthMetric{}
 }
 
 // Helper function to determine file content type from extension

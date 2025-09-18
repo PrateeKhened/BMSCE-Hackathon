@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/prateekkhenedcodes/BMSCE-Hackathon/backend/internal/config"
 	"github.com/prateekkhenedcodes/BMSCE-Hackathon/backend/internal/database"
 	"github.com/prateekkhenedcodes/BMSCE-Hackathon/backend/internal/handlers"
@@ -15,6 +16,12 @@ import (
 )
 
 func main() {
+	// Decision: Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: Could not load .env file: %v", err)
+		log.Printf("Using system environment variables")
+	}
+
 	// Decision: Load configuration from environment
 	cfg := config.Load()
 	log.Printf("Starting Medical Report Backend on %s:%s", cfg.Server.Host, cfg.Server.Port)
