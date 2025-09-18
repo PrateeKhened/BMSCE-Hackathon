@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, ArrowLeft, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { authApi, reportsApi, ApiError } from "@/lib/api";
 
 const AnalyzePage = () => {
   const navigate = useNavigate();
@@ -39,8 +40,7 @@ const AnalyzePage = () => {
   const handleAnalyze = async () => {
     if (!uploadedFile) return;
 
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!authApi.isAuthenticated()) {
       toast({
         title: "Authentication error",
         description: "You must be logged in to analyze a report.",
@@ -53,54 +53,59 @@ const AnalyzePage = () => {
     setIsAnalyzing(true);
     setProgress(0);
 
-    const formData = new FormData();
-    formData.append("file", uploadedFile);
-
     try {
-      const response = await fetch("/api/reports/upload", { // Replace with your actual upload endpoint
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      // Try to upload the file using the API client
+      const report = await reportsApi.upload(uploadedFile);
 
-      if (response.ok) {
-        // Simulate analysis progress
-        const progressInterval = setInterval(() => {
-          setProgress(prev => {
-            if (prev >= 90) {
-              clearInterval(progressInterval);
-              return 90;
-            }
-            return prev + 10;
-          });
-        }, 300);
+      // Simulate analysis progress
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 300);
 
-        // Simulate API call to get analysis results
+      // Simulate AI processing time
+      setTimeout(() => {
+        clearInterval(progressInterval);
+        setProgress(100);
+
+        toast({
+          title: "Analysis complete",
+          description: "Your report has been successfully analyzed.",
+        });
+
         setTimeout(() => {
-          clearInterval(progressInterval);
-          setProgress(100);
+          navigate("/results", { state: { reportId: report.id } });
+        }, 500);
+      }, 3000);
 
-          setTimeout(() => {
-            navigate("/results");
-          }, 500);
-        }, 3000);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          // Fallback for when backend upload endpoint is not implemented yet
+          toast({
+            title: "Upload endpoint not ready",
+            description: "The report upload feature is still being implemented. Please try again later.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Analysis failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       } else {
-        const errorData = await response.json();
         toast({
           title: "Analysis failed",
-          description: errorData.error || "An unknown error occurred.",
+          description: "Network error. Please check your connection and try again.",
           variant: "destructive",
         });
-        setIsAnalyzing(false);
       }
-    } catch (error) {
-      toast({
-        title: "Analysis failed",
-        description: "An unknown error occurred.",
-        variant: "destructive",
-      });
       setIsAnalyzing(false);
     }
   };

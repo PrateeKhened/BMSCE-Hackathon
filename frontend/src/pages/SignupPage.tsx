@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { authApi, ApiError } from "@/lib/api";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -38,26 +39,25 @@ export function SignupPage() {
         }),
       });
 
-      if (response.ok) {
-        toast({
-          title: "Signup successful",
-          description: "You can now log in.",
-        });
-        navigate("/login");
-      } else {
-        const errorData = await response.json();
+      toast({
+        title: "Signup successful",
+        description: response.message || "You can now log in.",
+      });
+      navigate("/login");
+    } catch (error) {
+      if (error instanceof ApiError) {
         toast({
           title: "Signup failed",
-          description: errorData.error || "An unknown error occurred.",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signup failed",
+          description: "Network error. Please try again.",
           variant: "destructive",
         });
       }
-    } catch (error) {
-      toast({
-        title: "Signup failed",
-        description: "An unknown error occurred.",
-        variant: "destructive",
-      });
     }
   };
 
