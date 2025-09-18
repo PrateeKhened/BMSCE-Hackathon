@@ -3,12 +3,14 @@ package types
 import "time"
 
 type User struct {
-	ID           int       `json:"id" db:"id"`
-	Email        string    `json:"email" db:"email"`
-	PasswordHash string    `json:"-" db:"password_hash"`
-	FullName     string    `json:"full_name" db:"full_name"`
-	CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
+	ID            int       `json:"id" db:"id"`
+	Email         string    `json:"email" db:"email"`
+	PasswordHash  string    `json:"-" db:"password_hash"` // Never expose password in JSON
+	FullName      string    `json:"full_name" db:"full_name"`
+	EmailVerified bool      `json:"email_verified" db:"email_verified"`
+	IsActive      bool      `json:"is_active" db:"is_active"`
+	CreatedAt     time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type LoginRequest struct {
