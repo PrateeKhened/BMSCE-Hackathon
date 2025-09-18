@@ -1,0 +1,61 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs and runtime files
+*.log
+*.pid
+*.seed
+*.gz
+*.zip
+
+# Node.js dependencies
+node_modules/
+
+# Compiled source files
+*.class
+*.dll
+*.exe
+*.so
+*.o
+*.pyc
+*.pyo
+
+# Package managers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and editor folders/files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary files
+*.tmp
+*.bak
+*.out
+*.cache
+
+# Build directories
+dist/
+build/
+target/
+
+# Coverage reports
+coverage/
+
+# Misc
+*.tgz
+*.gz
+*.zip
+*.tar
