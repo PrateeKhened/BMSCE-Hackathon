@@ -1,12 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Heart, FileText } from "lucide-react";
+import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 
-interface NavbarProps {
-  onSignIn: () => void;
-  onSignUp: () => void;
-}
-
-export const Navbar = ({ onSignIn, onSignUp }: NavbarProps) => {
+export const Navbar = () => {
   return (
     <nav className="flex items-center justify-between p-6 bg-background/80 backdrop-blur-sm border-b border-border/50">
       <div className="flex items-center space-x-2">
@@ -17,12 +13,16 @@ export const Navbar = ({ onSignIn, onSignUp }: NavbarProps) => {
       </div>
       
       <div className="flex items-center space-x-3">
-        <Button variant="ghost" onClick={onSignIn} className="transition-smooth">
-          Sign In
-        </Button>
-        <Button onClick={onSignUp} className="transition-smooth shadow-soft hover:shadow-card">
-          Get Started
-        </Button>
+        <Link to="/login">
+          <Button variant="ghost" className="transition-smooth">
+            Sign In
+          </Button>
+        </Link>
+        <Link to="/signup">
+          <Button className="transition-smooth shadow-soft hover:shadow-card">
+            Get Started
+          </Button>
+        </Link>
       </div>
     </nav>
   );

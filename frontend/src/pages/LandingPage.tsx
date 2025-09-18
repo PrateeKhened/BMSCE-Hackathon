@@ -1,28 +1,9 @@
-import { useState } from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { HeroSection } from "@/components/ui/hero-section";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleSignIn = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Authentication will be available in the next version.",
-      duration: 3000,
-    });
-  };
-
-  const handleSignUp = () => {
-    toast({
-      title: "Coming Soon", 
-      description: "User registration will be available in the next version.",
-      duration: 3000,
-    });
-  };
 
   const handleGetStarted = () => {
     navigate("/analyze");
@@ -30,7 +11,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar onSignIn={handleSignIn} onSignUp={handleSignUp} />
+      <Navbar />
       <main>
         <HeroSection onGetStarted={handleGetStarted} />
         
