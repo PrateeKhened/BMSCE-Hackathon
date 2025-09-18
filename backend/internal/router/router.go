@@ -97,11 +97,12 @@ func (rt *Router) setupReportRoutes(api *mux.Router) {
 
 	// Decision: RESTful endpoints for report management
 	reports.HandleFunc("", rt.reportHandler.GetReportsHandler).Methods("GET", "OPTIONS")
+	reports.HandleFunc("/history", rt.reportHandler.GetReportHistoryHandler).Methods("GET", "OPTIONS")
 	reports.HandleFunc("", rt.reportHandler.UploadReportHandler).Methods("POST", "OPTIONS")
-	reports.HandleFunc("/{id}", rt.reportHandler.GetReportHandler).Methods("GET", "OPTIONS")
-	reports.HandleFunc("/{id}", rt.reportHandler.DeleteReportHandler).Methods("DELETE", "OPTIONS")
-	reports.HandleFunc("/{id}/summary", rt.reportHandler.GetReportSummaryHandler).Methods("GET", "OPTIONS")
-	reports.HandleFunc("/{id}/metrics", rt.reportHandler.GetHealthMetricsHandler).Methods("GET", "OPTIONS")
+	reports.HandleFunc("/{id:[0-9]+}", rt.reportHandler.GetReportHandler).Methods("GET", "OPTIONS")
+	reports.HandleFunc("/{id:[0-9]+}", rt.reportHandler.DeleteReportHandler).Methods("DELETE", "OPTIONS")
+	reports.HandleFunc("/{id:[0-9]+}/summary", rt.reportHandler.GetReportSummaryHandler).Methods("GET", "OPTIONS")
+	reports.HandleFunc("/{id:[0-9]+}/metrics", rt.reportHandler.GetHealthMetricsHandler).Methods("GET", "OPTIONS")
 }
 
 // setupChatRoutes will configure chat endpoints

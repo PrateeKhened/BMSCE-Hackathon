@@ -174,6 +174,53 @@ func (rh *ReportHandler) GetReportsHandler(w http.ResponseWriter, r *http.Reques
 	writeJSONResponse(w, http.StatusOK, response)
 }
 
+// GetReportHistoryHandler retrieves user's report history with pagination
+// GET /api/reports/history
+func (rh *ReportHandler) GetReportHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	user, ok := middleware.GetUserFromContext(r)
+	if !ok {
+		writeErrorResponse(w, http.StatusUnauthorized, "Authentication required")
+		return
+	}
+
+	// Parse pagination parameters
+	limit, offset := rh.parsePaginationParams(r)
+
+	// Get reports from database
+	reports, err := rh.reportRepo.GetByUserID(user.ID, limit, offset)
+	if err != nil {
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to retrieve report history")
+		return
+	}
+
+	// Convert to response format
+	reportResponses := make([]types.Report, len(reports))
+	for i, report := range reports {
+		reportResponses[i] = types.Report{
+			ID:                report.ID,
+			UserID:            report.UserID,
+			OriginalFilename:  report.OriginalFilename,
+			FilePath:          report.FilePath,
+			FileType:          report.FileType,
+			SimplifiedSummary: report.SimplifiedSummary,
+			UploadDate:        report.UploadDate,
+			ProcessedAt:       report.ProcessedAt,
+		}
+	}
+
+	response := types.ReportListResponse{
+		Reports: reportResponses,
+		Total:   len(reportResponses),
+	}
+
+	writeJSONResponse(w, http.StatusOK, response)
+}
+
 // GetReportHandler retrieves a specific report by ID
 // GET /api/reports/{id}
 func (rh *ReportHandler) GetReportHandler(w http.ResponseWriter, r *http.Request) {
