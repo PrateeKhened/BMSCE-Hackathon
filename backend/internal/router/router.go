@@ -12,16 +12,19 @@ import (
 // Decision: Struct to organize handlers and middleware
 type Router struct {
 	authHandler    *handlers.AuthHandler
+	reportHandler  *handlers.ReportHandler
 	authMiddleware *middleware.AuthMiddleware
 }
 
 // NewRouter creates a new router with all dependencies
 func NewRouter(
 	authHandler *handlers.AuthHandler,
+	reportHandler *handlers.ReportHandler,
 	authMiddleware *middleware.AuthMiddleware,
 ) *Router {
 	return &Router{
 		authHandler:    authHandler,
+		reportHandler:  reportHandler,
 		authMiddleware: authMiddleware,
 	}
 }
@@ -45,8 +48,10 @@ func (rt *Router) SetupRoutes() *mux.Router {
 	// Decision: Setup authentication routes
 	rt.setupAuthRoutes(api)
 
+	// Decision: Setup report routes
+	rt.setupReportRoutes(api)
+
 	// Decision: Future route groups will be added here
-	// rt.setupReportRoutes(api)
 	// rt.setupChatRoutes(api)
 
 	return r
@@ -85,19 +90,19 @@ func (rt *Router) healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-// Future route setup methods will be added here:
+// setupReportRoutes configures report management endpoints
+func (rt *Router) setupReportRoutes(api *mux.Router) {
+	reports := api.PathPrefix("/reports").Subrouter()
+	reports.Use(rt.authMiddleware.RequireAuth) // All report routes require auth
 
-// setupReportRoutes will configure report management endpoints
-// func (rt *Router) setupReportRoutes(api *mux.Router) {
-//     reports := api.PathPrefix("/reports").Subrouter()
-//     reports.Use(rt.authMiddleware.RequireAuth) // All report routes require auth
-//
-//     reports.HandleFunc("", rt.reportHandler.ListReports).Methods("GET")
-//     reports.HandleFunc("", rt.reportHandler.UploadReport).Methods("POST")
-//     reports.HandleFunc("/{id}", rt.reportHandler.GetReport).Methods("GET")
-//     reports.HandleFunc("/{id}", rt.reportHandler.DeleteReport).Methods("DELETE")
-//     reports.HandleFunc("/{id}/summary", rt.reportHandler.GetSummary).Methods("GET")
-// }
+	// Decision: RESTful endpoints for report management
+	reports.HandleFunc("", rt.reportHandler.GetReportsHandler).Methods("GET", "OPTIONS")
+	reports.HandleFunc("", rt.reportHandler.UploadReportHandler).Methods("POST", "OPTIONS")
+	reports.HandleFunc("/{id}", rt.reportHandler.GetReportHandler).Methods("GET", "OPTIONS")
+	reports.HandleFunc("/{id}", rt.reportHandler.DeleteReportHandler).Methods("DELETE", "OPTIONS")
+	reports.HandleFunc("/{id}/summary", rt.reportHandler.GetReportSummaryHandler).Methods("GET", "OPTIONS")
+	reports.HandleFunc("/{id}/metrics", rt.reportHandler.GetHealthMetricsHandler).Methods("GET", "OPTIONS")
+}
 
 // setupChatRoutes will configure chat endpoints
 // func (rt *Router) setupChatRoutes(api *mux.Router) {

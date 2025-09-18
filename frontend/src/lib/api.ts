@@ -37,14 +37,24 @@ export interface LoginRequest {
 
 export interface Report {
   id: number;
-  filename: string;
-  content_type: string;
-  file_size: number;
-  upload_status: string;
-  ai_summary?: string;
   user_id: number;
-  created_at: string;
-  updated_at: string;
+  original_filename: string;
+  file_path: string;
+  file_type: string;
+  simplified_summary: string;
+  upload_date: string;
+  processed_at?: string;
+}
+
+export interface HealthMetric {
+  name: string;
+  value: string;
+  unit: string;
+  score: number; // 0-100 for speedometer
+  status: "normal" | "warning" | "critical";
+  range_min: number;
+  range_max: number;
+  description: string;
 }
 
 // API Error Class
@@ -230,8 +240,12 @@ export const reportsApi = {
     return httpClient.delete<void>(`/api/reports/${id}`, { auth: true });
   },
 
-  async getSummary(id: number): Promise<{ summary: string }> {
-    return httpClient.get<{ summary: string }>(`/api/reports/${id}/summary`, { auth: true });
+  async getSummary(id: number): Promise<{ report: Report; summary: string }> {
+    return httpClient.get<{ report: Report; summary: string }>(`/api/reports/${id}/summary`, { auth: true });
+  },
+
+  async getHealthMetrics(id: number): Promise<{ report_id: number; metrics: HealthMetric[]; status: string }> {
+    return httpClient.get<{ report_id: number; metrics: HealthMetric[]; status: string }>(`/api/reports/${id}/metrics`, { auth: true });
   }
 };
 

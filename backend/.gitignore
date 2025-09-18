@@ -53,3 +53,4 @@ Thumbs.db
 # Binary output
 /backend/cmd/server/server
 /backend/cmd/migration/migration
+medical-report-server

@@ -43,14 +43,20 @@ func setupTestServer(t *testing.T) *httptest.Server {
 
 	// Decision: Initialize all application layers
 	userRepo := models.NewUserRepository(db.GetDB())
+	reportRepo := models.NewReportRepository(db.GetDB())
 	passwordService := services.NewPasswordServiceWithCost(4) // Faster for tests
 	jwtService := services.NewJWTService(cfg.JWT.Secret, cfg.JWT.Expiration)
 	authService := services.NewAuthService(userRepo, passwordService, jwtService)
+
+	// Initialize AI service (can be nil for auth tests)
+	var aiService *services.AIService
+
 	authHandler := handlers.NewAuthHandler(authService)
+	reportHandler := handlers.NewReportHandler(reportRepo, authService, aiService, "/tmp/test_uploads", 20971520)
 	authMiddleware := middleware.NewAuthMiddleware(authService)
 
 	// Decision: Create router with all endpoints
-	rt := router.NewRouter(authHandler, authMiddleware)
+	rt := router.NewRouter(authHandler, reportHandler, authMiddleware)
 	httpRouter := rt.SetupRoutes()
 
 	// Decision: Return test server for HTTP requests
@@ -74,6 +80,26 @@ func createAllTestTables(t *testing.T, db *database.DB) {
 	_, err := db.Exec(createUserTable)
 	if err != nil {
 		t.Fatalf("Failed to create users table: %v", err)
+	}
+
+	createReportTable := `
+		CREATE TABLE reports (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER NOT NULL,
+			original_filename TEXT NOT NULL,
+			file_path TEXT NOT NULL,
+			file_type TEXT NOT NULL,
+			file_size INTEGER NOT NULL,
+			processing_status TEXT DEFAULT 'pending',
+			simplified_summary TEXT,
+			upload_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+			processed_at DATETIME,
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		)`
+
+	_, err = db.Exec(createReportTable)
+	if err != nil {
+		t.Fatalf("Failed to create reports table: %v", err)
 	}
 }
 

@@ -99,6 +99,15 @@ var (
 	}
 )
 
+// NewValidationError creates a new validation error with custom message
+func NewValidationError(message string) *AppError {
+	return &AppError{
+		Code:    http.StatusBadRequest,
+		Message: message,
+		Type:    "VALIDATION_ERROR",
+	}
+}
+
 // AI processing errors
 var (
 	ErrAIProcessingFailed = &AppError{

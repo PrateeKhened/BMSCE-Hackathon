@@ -11,6 +11,7 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	Upload   UploadConfig
+	AI       AIConfig
 }
 
 type ServerConfig struct {
@@ -36,6 +37,12 @@ type UploadConfig struct {
 	AllowedTypes []string
 }
 
+type AIConfig struct {
+	GeminiAPIKey string
+	MaxTokens    int32
+	Temperature  float32
+}
+
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -53,9 +60,14 @@ func Load() *Config {
 			Expiration: getDurationEnv("JWT_EXPIRATION", 24*time.Hour),
 		},
 		Upload: UploadConfig{
-			MaxFileSize: getInt64Env("MAX_FILE_SIZE", 10*1024*1024), // 10MB default
+			MaxFileSize: getInt64Env("MAX_FILE_SIZE", 20*1024*1024), // 20MB default
 			UploadPath:  getEnv("UPLOAD_PATH", "./uploads"),
-			AllowedTypes: []string{"application/pdf", "text/plain", "image/jpeg", "image/png"},
+			AllowedTypes: []string{"application/pdf", "text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"},
+		},
+		AI: AIConfig{
+			GeminiAPIKey: getEnv("GEMINI_API_KEY", ""),
+			MaxTokens:    getInt32Env("AI_MAX_TOKENS", 2048),
+			Temperature:  getFloat32Env("AI_TEMPERATURE", 0.3),
 		},
 	}
 }
@@ -80,6 +92,24 @@ func getInt64Env(key string, defaultValue int64) int64 {
 	if value := os.Getenv(key); value != "" {
 		if intVal, err := strconv.ParseInt(value, 10, 64); err == nil {
 			return intVal
+		}
+	}
+	return defaultValue
+}
+
+func getInt32Env(key string, defaultValue int32) int32 {
+	if value := os.Getenv(key); value != "" {
+		if intVal, err := strconv.ParseInt(value, 10, 32); err == nil {
+			return int32(intVal)
+		}
+	}
+	return defaultValue
+}
+
+func getFloat32Env(key string, defaultValue float32) float32 {
+	if value := os.Getenv(key); value != "" {
+		if floatVal, err := strconv.ParseFloat(value, 32); err == nil {
+			return float32(floatVal)
 		}
 	}
 	return defaultValue
