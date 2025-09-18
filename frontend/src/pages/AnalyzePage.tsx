@@ -38,30 +38,71 @@ const AnalyzePage = () => {
 
   const handleAnalyze = async () => {
     if (!uploadedFile) return;
-    
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast({
+        title: "Authentication error",
+        description: "You must be logged in to analyze a report.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
     setIsAnalyzing(true);
     setProgress(0);
-    
-    // Simulate analysis progress
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
-        }
-        return prev + 10;
-      });
-    }, 300);
 
-    // Simulate API call
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setProgress(100);
-      
-      setTimeout(() => {
-        navigate("/results");
-      }, 500);
-    }, 3000);
+    const formData = new FormData();
+    formData.append("file", uploadedFile);
+
+    try {
+      const response = await fetch("/api/reports/upload", { // Replace with your actual upload endpoint
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Simulate analysis progress
+        const progressInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(progressInterval);
+              return 90;
+            }
+            return prev + 10;
+          });
+        }, 300);
+
+        // Simulate API call to get analysis results
+        setTimeout(() => {
+          clearInterval(progressInterval);
+          setProgress(100);
+
+          setTimeout(() => {
+            navigate("/results");
+          }, 500);
+        }, 3000);
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Analysis failed",
+          description: errorData.error || "An unknown error occurred.",
+          variant: "destructive",
+        });
+        setIsAnalyzing(false);
+      }
+    } catch (error) {
+      toast({
+        title: "Analysis failed",
+        description: "An unknown error occurred.",
+        variant: "destructive",
+      });
+      setIsAnalyzing(false);
+    }
   };
 
   return (

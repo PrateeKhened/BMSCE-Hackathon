@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,9 +9,54 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export function SignupPage() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSignup = async () => {
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          full_name: `${firstName} ${lastName}`,
+          email,
+          password,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Signup successful",
+          description: "You can now log in.",
+        });
+        navigate("/login");
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Signup failed",
+          description: errorData.error || "An unknown error occurred.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Signup failed",
+        description: "An unknown error occurred.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-950">
       <Card className="mx-auto max-w-sm">
@@ -25,11 +71,23 @@ export function SignupPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="first-name">First name</Label>
-                <Input id="first-name" placeholder="Max" required />
+                <Input
+                  id="first-name"
+                  placeholder="Max"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="last-name">Last name</Label>
-                <Input id="last-name" placeholder="Robinson" required />
+                <Input
+                  id="last-name"
+                  placeholder="Robinson"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
               </div>
             </div>
             <div className="grid gap-2">
@@ -39,13 +97,20 @@ export function SignupPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <Button type="submit" className="w-full">
+            <Button onClick={handleSignup} className="w-full">
               Create an account
             </Button>
             <Button variant="outline" className="w-full">
