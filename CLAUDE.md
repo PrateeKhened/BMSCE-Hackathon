@@ -96,10 +96,20 @@ CGO_ENABLED=1 go test ./tests/ -v      # Ensure SQLite driver works in tests
   - Foreign key constraints and strategic indexing
   - Repository interfaces with full CRUD operations
   - Comprehensive test coverage with in-memory SQLite
-- 🚧 **Authentication System**: Next priority (JWT + bcrypt)
-- 📋 **File Upload**: Planned after authentication
-- 📋 **AI Integration**: Report processing and simplification
-- 📋 **Chat Functionality**: AI conversation about reports
+- ✅ **Authentication System**: Complete (JWT + bcrypt)
+  - User registration, login, logout, token refresh
+  - Secure password hashing with bcrypt
+  - JWT middleware for protected endpoints
+- ✅ **File Upload System**: Complete with validation and processing
+  - Support for PDF, TXT, DOCX files (up to 20MB)
+  - Secure file storage with unique naming
+  - File type validation and metadata tracking
+- ✅ **AI Integration**: Complete Gemini API integration
+  - Real-time medical report analysis
+  - Health metrics extraction with 0-100 scoring for speedometer display
+  - Configurable prompt system in `prompts/medical_analysis_prompt.txt`
+  - Comprehensive error handling and JSON parsing
+- 📋 **Chat Functionality**: Planned (AI conversation about reports)
 
 ### Git Workflow
 - **Frequent commits** for each small feature with full tests
@@ -115,10 +125,14 @@ CGO_ENABLED=1 go test ./tests/ -v      # Ensure SQLite driver works in tests
 - `migrations/*.sql`: Goose migration files for schema changes
 - `internal/models/*.go`: Repository pattern implementations (user.go, report.go, chat_message.go)
 - `internal/config/config.go`: Environment-based configuration management
+- `internal/services/ai_service.go`: Gemini AI integration with configurable prompts
+- `internal/handlers/report.go`: Complete report management with file upload and AI processing
+- `prompts/medical_analysis_prompt.txt`: **Configurable AI system prompt** for medical analysis
+- `prompts/README.md`: Documentation for modifying AI prompts
 - `pkg/types/*.go`: Shared data structures and request/response types
 - `pkg/errors/errors.go`: Custom error types with HTTP status codes
 - `tests/database_test.go`: Database connectivity and model operation tests
-- `cmd/server/main.go`: Main application entry point (currently minimal placeholder)
+- `cmd/server/main.go`: Main application entry point with full service integration
 
 ## Important Implementation Details
 
