@@ -1,50 +1,49 @@
 # Medical Report Simplifier - Backend
 
-## Project Structure
+AI-powered medical report simplifier that converts complex medical test reports into patient-friendly explanations.
 
-```
-backend/
-├── cmd/                    # Application entry points
-│   ├── server/            # Main server application
-│   └── migration/         # Migration runner
-├── internal/              # Private application code
-│   ├── auth/             # Authentication logic
-│   ├── handlers/         # HTTP handlers
-│   ├── middleware/       # HTTP middleware
-│   ├── models/           # Database models
-│   ├── services/         # Business logic
-│   ├── database/         # Database connection and queries
-│   ├── config/           # Configuration management
-│   └── utils/            # Utility functions
-├── pkg/                   # Public packages
-│   ├── types/            # Shared types and structs
-│   └── errors/           # Custom error types
-├── migrations/           # Database migrations (Goose)
-├── uploads/              # File upload storage
-├── tests/                # Test files
-│   ├── unit/            # Unit tests
-│   └── integration/     # Integration tests
-└── docs/                 # Documentation
+## Quick Start
+
+```bash
+# Clone and setup
+cd backend
+make setup          # Install dependencies and initialize database
+
+# Development
+make run            # Start development server
+make test           # Run all tests
+
+# Database operations
+make migrate-status # Check current migration status
+make migrate-up     # Apply new migrations
 ```
 
-## Features
+## Implementation Status
 
-### Phase 1 - Core Backend
-- [x] Project structure setup
-- [ ] Database setup with SQLite and Goose migrations
+### ✅ Phase 1 - Database Foundation (Complete)
+- [x] Project structure with clean architecture
+- [x] SQLite database with Goose migrations
+- [x] Repository pattern with full CRUD operations
+- [x] Database models for users, reports, and chat messages
+- [x] Comprehensive test coverage
+- [x] Foreign key constraints and strategic indexing
+
+### 🔄 Phase 2 - Authentication & API (In Progress)
 - [ ] User authentication (signup/login/logout)
-- [ ] JWT token management
-- [ ] File upload endpoint
+- [ ] JWT token management with bcrypt password hashing
+- [ ] HTTP handlers and middleware
+- [ ] File upload endpoint with validation
 
-### Phase 2 - AI Integration
+### 📋 Phase 3 - AI Integration (Planned)
 - [ ] AI service integration for report processing
-- [ ] Report parsing and simplification
+- [ ] Medical report parsing and simplification
 - [ ] Chat functionality with uploaded reports
+- [ ] Processing status tracking
 
-### Phase 3 - Dashboard & Analytics
-- [ ] Health metrics tracking
-- [ ] Report history management
-- [ ] User dashboard data endpoints
+### 🎯 Phase 4 - Dashboard & Analytics (Future)
+- [ ] Health metrics extraction and tracking
+- [ ] Report history with visual timeline
+- [ ] User dashboard with health insights
 
 ## Technology Stack
 
@@ -58,35 +57,85 @@ backend/
 ## Database Schema
 
 ### Users Table
-- id (PRIMARY KEY)
-- email (UNIQUE)
-- password_hash
-- full_name
-- created_at
-- updated_at
+```sql
+id INTEGER PRIMARY KEY AUTOINCREMENT
+email TEXT UNIQUE NOT NULL
+password_hash TEXT NOT NULL
+full_name TEXT NOT NULL
+email_verified BOOLEAN DEFAULT FALSE
+is_active BOOLEAN DEFAULT TRUE
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+```
 
 ### Reports Table
-- id (PRIMARY KEY)
-- user_id (FOREIGN KEY)
-- original_filename
-- file_path
-- file_type
-- simplified_summary
-- upload_date
-- processed_at
+```sql
+id INTEGER PRIMARY KEY AUTOINCREMENT
+user_id INTEGER NOT NULL (FK → users.id)
+original_filename TEXT NOT NULL
+file_path TEXT NOT NULL
+file_type TEXT NOT NULL
+file_size INTEGER NOT NULL
+simplified_summary TEXT
+processing_status TEXT DEFAULT 'pending' (pending|processing|completed|failed)
+upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
+processed_at DATETIME
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+```
 
 ### Chat_Messages Table
-- id (PRIMARY KEY)
-- report_id (FOREIGN KEY)
-- user_message
-- ai_response
-- created_at
+```sql
+id INTEGER PRIMARY KEY AUTOINCREMENT
+report_id INTEGER NOT NULL (FK → reports.id)
+user_message TEXT NOT NULL
+ai_response TEXT NOT NULL
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+is_deleted BOOLEAN DEFAULT FALSE
+```
 
-### Health_Metrics Table (Future)
-- id (PRIMARY KEY)
-- user_id (FOREIGN KEY)
-- report_id (FOREIGN KEY)
-- metric_type (blood_pressure, diabetes, etc.)
-- value
-- unit
-- date_recorded
+## Development Commands
+
+| Command | Purpose |
+|---------|---------|
+| `make setup` | First-time project setup |
+| `make run` | Start development server |
+| `make test` | Run all tests |
+| `make test-coverage` | Generate HTML coverage report |
+| `make migrate-up` | Apply pending migrations |
+| `make migrate-down` | Rollback last migration |
+| `make migrate-create NAME=name` | Create new migration |
+| `make build` | Build production binary |
+| `make clean` | Clean build artifacts |
+
+## Testing
+
+```bash
+# Run all tests
+make test
+
+# Test specific components
+go test ./tests/ -v                    # Database integration tests
+go test ./internal/models/ -v          # Model unit tests
+go test -run TestUserModel ./tests/ -v # Single test function
+
+# Generate coverage report
+make test-coverage  # Creates coverage.html
+```
+
+## Architecture
+
+### Repository Pattern
+- **Database models** implement repository interfaces for type-safe operations
+- **Separation of concerns** between data access, business logic, and HTTP handlers
+- **Easy testing** with mockable repository interfaces
+
+### Configuration
+- **Environment-based** configuration with sensible defaults
+- **Development**: Uses `.env` file or direct environment variables
+- **Production**: Environment variables only
+
+### Error Handling
+- **Custom error types** with HTTP status codes in `pkg/errors/`
+- **Consistent API responses** across all endpoints
+- **Graceful error handling** with proper logging
