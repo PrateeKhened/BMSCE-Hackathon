@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { authApi, ApiError } from "@/lib/api";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -21,35 +22,36 @@ export function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await authApi.login({ email, password });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
+      if (response.token) {
+        authApi.setToken(response.token);
         toast({
           title: "Login successful",
+          description: response.message || "Welcome back!",
         });
         navigate("/analyze");
       } else {
-        const errorData = await response.json();
         toast({
           title: "Login failed",
-          description: errorData.error || "An unknown error occurred.",
+          description: response.message || "Invalid credentials",
           variant: "destructive",
         });
       }
     } catch (error) {
-      toast({
-        title: "Login failed",
-        description: "An unknown error occurred.",
-        variant: "destructive",
-      });
+      if (error instanceof ApiError) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Network error. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
