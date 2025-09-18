@@ -19,6 +19,8 @@ export function SignupPage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [dob, setDob] = useState(""); // Date of Birth
+  const [gender, setGender] = useState(""); // Gender
 
   const handleSignup = async () => {
     try {
@@ -31,6 +33,8 @@ export function SignupPage() {
           full_name: `${firstName} ${lastName}`,
           email,
           password,
+          dob,
+          gender,
         }),
       });
 
@@ -58,71 +62,188 @@ export function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-950">
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Sign Up</CardTitle>
-          <CardDescription>
-            Enter your information to create an account
+    <div
+      className="relative min-h-screen flex items-center justify-center px-6"
+      style={{
+        background: "var(--gradient-hero)",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {/* Soft abstract shapes */}
+      <svg
+        className="absolute top-0 left-0 w-full h-full pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid meet"
+        fill="none"
+      >
+        <circle cx="20%" cy="15%" r="180" fill="rgba(255,255,255,0.06)" />
+        <circle cx="80%" cy="80%" r="260" fill="rgba(255,255,255,0.08)" />
+        <circle cx="50%" cy="50%" r="350" fill="rgba(255,255,255,0.03)" />
+      </svg>
+
+      {/* Signup Card */}
+      <Card
+        className="relative max-w-[400px] w-full backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl p-8 z-10"
+        style={{
+          background: "#ffffff", // Solid white background
+        }}
+      >
+        <CardHeader className="text-center mb-8">
+          <CardTitle className="text-3xl font-extrabold text-teal-900 drop-shadow-sm">
+            Create an Account
+          </CardTitle>
+          <CardDescription className="text-teal-700 mt-2">
+            Fill in your details to get started
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="first-name">First name</Label>
-                <Input
-                  id="first-name"
-                  placeholder="Max"
-                  required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="last-name">Last name</Label>
-                <Input
-                  id="last-name"
-                  placeholder="Robinson"
-                  required
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-              </div>
+
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label
+                htmlFor="first-name"
+                className="text-teal-900 font-semibold tracking-wide"
+              >
+                First Name
+              </Label>
+              <Input
+                id="first-name"
+                placeholder="Max"
+                className="rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+
+            <div className="space-y-1">
+              <Label
+                htmlFor="last-name"
+                className="text-teal-900 font-semibold tracking-wide"
+              >
+                Last Name
+              </Label>
+              <Input
+                id="last-name"
+                placeholder="Robinson"
+                className="rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label
+                htmlFor="email"
+                className="text-teal-900 font-semibold tracking-wide"
+              >
+                Email Address
+              </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
-                required
+                placeholder="you@example.com"
+                className="rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+
+            <div className="space-y-1">
+              <Label
+                htmlFor="password"
+                className="text-teal-900 font-semibold tracking-wide"
+              >
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
+                placeholder=""
+                className="rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button onClick={handleSignup} className="w-full">
-              Create an account
-            </Button>
-            <Button variant="outline" className="w-full">
-              Sign up with Google
-            </Button>
+
+            {/* New DOB Field */}
+            <div className="space-y-1">
+              <Label
+                htmlFor="dob"
+                className="text-teal-900 font-semibold tracking-wide"
+              >
+                Date of Birth
+              </Label>
+              <Input
+                id="dob"
+                type="date"
+                className="rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+              />
+            </div>
+
+            {/* New Gender Field */}
+            <div className="space-y-1">
+              <Label
+                htmlFor="gender"
+                className="text-teal-900 font-semibold tracking-wide"
+              >
+                Gender
+              </Label>
+              <select
+                id="gender"
+                className="w-full rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
-          <div className="mt-4 text-center text-sm">
+
+          <Button
+            onClick={handleSignup}
+            className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-lg shadow-md
+              hover:from-teal-700 hover:to-cyan-700 transition-all duration-300"
+          >
+            Create Account
+          </Button>
+
+          {/* OR divider */}
+          <div className="flex items-center justify-center gap-3 text-teal-700 font-semibold">
+            <hr className="flex-grow border-teal-600/30" />
+            <span>OR</span>
+            <hr className="flex-grow border-teal-600/30" />
+          </div>
+
+          {/* Google Sign-Up Button */}
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-3 border-teal-600 text-teal-700
+              hover:bg-teal-600 hover:text-white transition-colors rounded-lg"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-6 h-6"
+            />
+            Sign up with Google
+          </Button>
+
+          {/* Login Link */}
+          <p className="mt-5 text-center text-teal-700">
             Already have an account?{" "}
-            <Link to="/login" className="underline">
+            <Link
+              to="/login"
+              className="text-teal-900 font-semibold hover:underline"
+            >
               Sign in
             </Link>
-          </div>
+          </p>
         </CardContent>
       </Card>
     </div>

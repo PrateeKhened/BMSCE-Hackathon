@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +17,10 @@ export function LoginPage() {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -40,72 +41,145 @@ export function LoginPage() {
         const errorData = await response.json();
         toast({
           title: "Login failed",
-          description: errorData.error || "An unknown error occurred.",
+          description: errorData.error || "Invalid credentials.",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: "An unknown error occurred.",
+        title: "Error",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-950">
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
+    <div
+      className="relative min-h-screen flex items-center justify-center px-6"
+      style={{
+        background: "var(--gradient-hero)",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {/* Soft abstract shapes */}
+      <svg
+        className="absolute top-0 left-0 w-full h-full pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid meet"
+        fill="none"
+      >
+        <circle cx="20%" cy="15%" r="180" fill="rgba(255,255,255,0.06)" />
+        <circle cx="80%" cy="80%" r="260" fill="rgba(255,255,255,0.08)" />
+        <circle cx="50%" cy="50%" r="350" fill="rgba(255,255,255,0.03)" />
+      </svg>
+
+      {/* Glassy translucent white card */}
+      <Card
+        className="relative max-w-[400px] w-full backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl p-8 z-10"
+        style={{
+          background: "#ffffff", // translucent white gradient
+          // You can replace above with var(--gradient-card) if you want color instead of white gradient
+          // background: "var(--gradient-card)",
+        }}
+      >
+        <CardHeader className="text-center mb-8">
+          <CardTitle className="text-3xl font-extrabold text-teal-900 drop-shadow-sm">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-teal-700 mt-2">
+            Login to your account and start exploring
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label
+                htmlFor="email"
+                className="text-teal-900 font-semibold tracking-wide"
+              >
+                Email Address
+              </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
-                required
+                placeholder="you@example.com"
+                className="rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <Label
+                  htmlFor="password"
+                  className="text-teal-900 font-semibold tracking-wide"
+                >
+                  Password
+                </Label>
                 <Link
                   to="#"
-                  className="ml-auto inline-block text-sm underline"
+                  className="text-teal-700 hover:text-teal-900 text-sm font-medium"
                 >
-                  Forgot your password?
+                  Forgot Password?
                 </Link>
               </div>
               <Input
                 id="password"
                 type="password"
-                required
+                placeholder=""
+                className="rounded-lg bg-white/80 text-teal-900 placeholder-teal-600 shadow-inner focus:ring-teal-500 focus:ring-2"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button onClick={handleLogin} className="w-full">
-              Login
-            </Button>
-            <Button variant="outline" className="w-full">
-              Login with Google
-            </Button>
           </div>
-          <div className="mt-4 text-center text-sm">
+
+          <Button
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-lg shadow-md
+              hover:from-teal-700 hover:to-cyan-700 transition-all duration-300"
+          >
+            {loading ? "Signing In..." : "Sign In"}
+          </Button>
+
+          {/* OR divider */}
+          <div className="flex items-center justify-center gap-3 text-teal-700 font-semibold">
+            <hr className="flex-grow border-teal-600/30" />
+            <span>OR</span>
+            <hr className="flex-grow border-teal-600/30" />
+          </div>
+
+          {/* Google Login Button */}
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-3 border-teal-600 text-teal-700
+              hover:bg-teal-600 hover:text-white transition-colors rounded-lg"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-6 h-6"
+            />
+            Continue with Google
+          </Button>
+
+          {/* Signup Link */}
+          <p className="mt-5 text-center text-teal-700">
             Don&apos;t have an account?{" "}
-            <Link to="/signup" className="underline">
+            <Link
+              to="/signup"
+              className="text-teal-900 font-semibold hover:underline"
+            >
               Sign up
             </Link>
-          </div>
+          </p>
         </CardContent>
       </Card>
     </div>
