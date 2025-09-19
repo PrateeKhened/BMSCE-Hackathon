@@ -9,6 +9,8 @@ import ResultsPage from "./pages/ResultsPage";
 import NotFound from "./pages/NotFound";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
+import MedicalAnalysisDemo from "./pages/MedicalAnalysisDemo";
+import NewApp from "./components/NewApp";
 
 const queryClient = new QueryClient();
 
@@ -21,9 +23,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/analyze" element={<AnalyzePage />} />
-          <Route path="/results" element={<ResultsPage />} />
+          <Route path="/results/:id" element={<ResultsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/demo" element={<MedicalAnalysisDemo />} />
+          <Route path="/new" element={<NewApp />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

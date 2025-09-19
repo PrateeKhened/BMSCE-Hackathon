@@ -51,54 +51,21 @@ const AnalyzePage = () => {
     }
 
     setIsAnalyzing(true);
-    setProgress(0);
 
     try {
-      // Try to upload the file using the API client
       const report = await reportsApi.upload(uploadedFile);
-
-      // Simulate analysis progress
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 300);
-
-      // Simulate AI processing time
-      setTimeout(() => {
-        clearInterval(progressInterval);
-        setProgress(100);
-
-        toast({
-          title: "Analysis complete",
-          description: "Your report has been successfully analyzed.",
-        });
-
-        setTimeout(() => {
-          navigate("/results", { state: { reportId: report.id } });
-        }, 500);
-      }, 3000);
-
+      toast({
+        title: "Analysis Started",
+        description: "Your report is being analyzed. You will be redirected shortly.",
+      });
+      navigate(`/results/${report.report_id}`);
     } catch (error) {
       if (error instanceof ApiError) {
-        if (error.status === 404) {
-          // Fallback for when backend upload endpoint is not implemented yet
-          toast({
-            title: "Upload endpoint not ready",
-            description: "The report upload feature is still being implemented. Please try again later.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Analysis failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Analysis failed",
+          description: error.message,
+          variant: "destructive",
+        });
       } else {
         toast({
           title: "Analysis failed",

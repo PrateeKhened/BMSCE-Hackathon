@@ -1,66 +1,58 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MetricDial } from "@/components/ui/metric-dial";
 import { Chatbot } from "@/components/ui/chatbot";
-import { ArrowLeft, Download, Share, AlertTriangle, TrendingUp, Heart, Activity, Zap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Download, Share, AlertTriangle, TrendingUp, Heart, Activity, Zap, Loader2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { reportsApi, Report, HealthMetric } from "@/lib/api";
 
-// Mock data for demonstration
-const mockResults = [
-  {
-    biomarker: "Hemoglobin",
-    value: "11.5 g/dL",
-    normalRange: "13.5 - 17.5 g/dL",
-    status: "low",
-    percentage: 67,
-    explanation: "Your hemoglobin is slightly below the normal range. This can sometimes be a sign of anemia, which means your body may not be getting enough oxygen. This is common and often treatable."
-  },
-  {
-    biomarker: "LDL Cholesterol",
-    value: "135 mg/dL",
-    normalRange: "< 100 mg/dL",
-    status: "high",
-    percentage: 135,
-    explanation: "Your LDL (\"bad\") cholesterol is elevated. This increases your risk of heart disease. Simple dietary changes and exercise can often help bring this number down."
-  },
-  {
-    biomarker: "Blood Glucose",
-    value: "92 mg/dL",
-    normalRange: "70 - 100 mg/dL",
-    status: "normal",
-    percentage: 92,
-    explanation: "Your blood sugar level is in the healthy range. This indicates good blood sugar control and a lower risk of diabetes."
-  },
-  {
-    biomarker: "White Blood Cells",
-    value: "7,200 cells/μL",
-    normalRange: "4,000 - 11,000 cells/μL",
-    status: "normal",
-    percentage: 85,
-    explanation: "Your white blood cell count is normal, indicating your immune system is functioning well and there are no signs of infection or inflammation."
-  }
-];
-
-const mockAiAnalysis = {
-  overallHealth: "Generally Good",
-  keyFindings: [
-    "Slight anemia indicated by low hemoglobin levels",
-    "Elevated LDL cholesterol requiring dietary attention",
-    "Normal blood sugar and immune function"
-  ],
-  recommendations: [
-    "Consider iron-rich foods to boost hemoglobin",
-    "Reduce saturated fats to lower LDL cholesterol",
-    "Maintain current healthy lifestyle for blood sugar",
-    "Schedule follow-up in 3 months"
-  ],
-  riskFactors: ["Cardiovascular risk due to high LDL"],
-  nextSteps: "Consult with your doctor about dietary changes and possible iron supplementation."
-};
+interface ReportSummary extends Report {
+  summary: string;
+}
 
 const ResultsPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [metrics, setMetrics] = useState<HealthMetric[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchReportData = async () => {
+      console.log("Fetching data for report ID:", id);
+      if (!id) {
+        setError("Report ID not found.");
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const reportId = parseInt(id, 10);
+        console.log("Parsed report ID:", reportId);
+
+        const summaryData = await reportsApi.getSummary(reportId);
+        console.log("Summary data:", summaryData);
+
+        const metricsData = await reportsApi.getHealthMetrics(reportId);
+        console.log("Metrics data:", metricsData);
+
+        setSummary({ ...summaryData.report, summary: summaryData.summary });
+        setMetrics(metricsData.metrics);
+        console.log("State updated:", { summary, metrics });
+
+      } catch (err: any) {
+        console.error("Failed to fetch report data:", err);
+        setError(err.message || "Failed to fetch report data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReportData();
+  }, [id]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -98,6 +90,36 @@ const ResultsPage = () => {
         return { text: "Unknown", variant: "outline" as const };
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="text-lg text-muted-foreground">Analyzing your report...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
+          <h2 className="text-2xl font-semibold text-foreground">Error</h2>
+          <p className="text-muted-foreground">{error}</p>
+          <Button onClick={() => navigate("/analyze")}>Go Back</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!summary) {
+    return null;
+  }
+
+  const parsedSummary = JSON.parse(summary.summary);
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,14 +175,14 @@ const ResultsPage = () => {
               Your Health Metrics
             </h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {mockResults.map((result, index) => (
+              {metrics.map((metric, index) => (
                 <MetricDial
                   key={index}
-                  title={result.biomarker}
-                  value={result.value}
-                  normalRange={result.normalRange}
-                  percentage={result.percentage}
-                  status={result.status as "normal" | "warning" | "danger"}
+                  title={metric.name}
+                  value={`${metric.value} ${metric.unit}`}
+                  normalRange={`${metric.range_min}-${metric.range_max} ${metric.unit}`}
+                  percentage={metric.score}
+                  status={metric.status as "normal" | "warning" | "danger"}
                 />
               ))}
             </div>
@@ -181,7 +203,7 @@ const ResultsPage = () => {
                   <span className="font-medium text-foreground">Overall Health Status</span>
                 </div>
                 <div className="p-4 bg-health-normal-bg rounded-xl">
-                  <span className="text-lg font-semibold text-health-normal">{mockAiAnalysis.overallHealth}</span>
+                  <span className="text-lg font-semibold text-health-normal">{parsedSummary.overall_health_status}</span>
                 </div>
               </div>
 
@@ -192,7 +214,7 @@ const ResultsPage = () => {
                   <span className="font-medium text-foreground">Key Findings</span>
                 </div>
                 <div className="space-y-2">
-                  {mockAiAnalysis.keyFindings.map((finding, index) => (
+                  {parsedSummary.key_findings.map((finding: string, index: number) => (
                     <div key={index} className="p-3 bg-primary-soft rounded-lg text-sm text-foreground">
                       • {finding}
                     </div>
@@ -205,7 +227,7 @@ const ResultsPage = () => {
             <div className="mt-6 p-4 bg-secondary/20 rounded-xl">
               <h3 className="font-semibold text-foreground mb-3">Recommended Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {mockAiAnalysis.recommendations.map((rec, index) => (
+                {parsedSummary.recommendations.map((rec: string, index: number) => (
                   <div key={index} className="flex items-start space-x-2 text-sm">
                     <span className="text-secondary-accent mt-1">✓</span>
                     <span className="text-foreground">{rec}</span>
@@ -217,39 +239,39 @@ const ResultsPage = () => {
             {/* Next Steps */}
             <div className="mt-4 p-4 bg-health-warning-bg rounded-xl">
               <h3 className="font-semibold text-health-warning mb-2">Next Steps</h3>
-              <p className="text-sm text-foreground">{mockAiAnalysis.nextSteps}</p>
+              <p className="text-sm text-foreground">{parsedSummary.next_steps}</p>
             </div>
           </Card>
 
           {/* Results */}
           <div className="space-y-4">
-            {mockResults.map((result, index) => (
+            {metrics.map((metric, index) => (
               <Card key={index} className="p-6 transition-smooth hover:shadow-card">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">{result.biomarker}</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{metric.name}</h3>
                     <div className="flex items-center space-x-3 mt-1">
-                      <span className="text-2xl font-bold text-foreground">{result.value}</span>
+                      <span className="text-2xl font-bold text-foreground">{`${metric.value} ${metric.unit}`}</span>
                       <Badge 
-                        variant={getStatusBadge(result.status).variant}
+                        variant={getStatusBadge(metric.status).variant}
                         className="transition-smooth"
                       >
-                        {getStatusBadge(result.status).text}
-                      </Badge>
+                        {getStatusBadge(metric.status).text}
+                      </Badge>.
                     </div>
                   </div>
-                  <div className={`w-1 h-16 rounded-full bg-${getStatusColor(result.status)}`} />
+                  <div className={`w-1 h-16 rounded-full bg-${getStatusColor(metric.status)}`} />
                 </div>
                 
                 <div className="space-y-3">
                   <div className="text-sm text-muted-foreground">
-                    <span className="font-medium">Normal Range:</span> {result.normalRange}
+                    <span className="font-medium">Normal Range:</span> {`${metric.range_min}-${metric.range_max} ${metric.unit}`}
                   </div>
                   
-                  <div className={`p-4 rounded-xl bg-${getStatusBg(result.status)}`}>
+                  <div className={`p-4 rounded-xl bg-${getStatusBg(metric.status)}`}>
                     <h4 className="font-medium text-foreground mb-2">What this means:</h4>
                     <p className="text-sm text-foreground leading-relaxed">
-                      {result.explanation}
+                      {metric.description}
                     </p>
                   </div>
                 </div>
