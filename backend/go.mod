@@ -1,6 +1,6 @@
 module github.com/prateekkhenedcodes/BMSCE-Hackathon/backend
 
-go 1.21
+go 1.24.1
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
@@ -27,6 +27,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.5 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.51.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.51.0 // indirect

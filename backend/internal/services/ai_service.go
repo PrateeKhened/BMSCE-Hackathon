@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
+	"github.com/ledongthuc/pdf"
 	"google.golang.org/api/option"
 )
 
@@ -105,11 +106,16 @@ func NewAIService(apiKey string) (*AIService, error) {
 
 // AnalyzeReport processes a medical report file and returns comprehensive analysis
 func (ai *AIService) AnalyzeReport(filePath, fileType string) (string, error) {
+	fmt.Println("--- AI Service: AnalyzeReport ---")
+	fmt.Println("File path:", filePath)
+	fmt.Println("File type:", fileType)
+
 	// Extract text content from file
 	content, err := ai.extractTextFromFile(filePath, fileType)
 	if err != nil {
 		return "", fmt.Errorf("failed to extract text from file: %w", err)
 	}
+	fmt.Println("Extracted content length:", len(content))
 
 	// Generate comprehensive analysis
 	analysis, err := ai.generateAnalysis(content)
@@ -151,11 +157,41 @@ func (ai *AIService) extractFromTXT(filePath string) (string, error) {
 	return string(content), nil
 }
 
-// extractFromPDF extracts text from PDF files (placeholder - requires PDF library)
+// extractFromPDF extracts text from PDF files using ledongthuc/pdf library
 func (ai *AIService) extractFromPDF(filePath string) (string, error) {
-	// TODO: Implement PDF text extraction using a library like unidoc/unipdf
-	// For now, return placeholder text
-	return "PDF text extraction not yet implemented. Please use TXT format for testing.", nil
+	f, r, err := pdf.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open PDF: %w", err)
+	}
+	defer f.Close()
+
+	var textContent strings.Builder
+	totalPages := r.NumPage()
+
+	// Extract text from all pages
+	for pageNum := 1; pageNum <= totalPages; pageNum++ {
+		page := r.Page(pageNum)
+		if page.V.IsNull() {
+			continue
+		}
+
+		content, err := page.GetPlainText(nil)
+		if err != nil {
+			// Log error but continue with other pages
+			fmt.Printf("Warning: Failed to extract text from page %d: %v\n", pageNum, err)
+			continue
+		}
+
+		textContent.WriteString(content)
+		textContent.WriteString("\n")
+	}
+
+	extractedText := textContent.String()
+	if strings.TrimSpace(extractedText) == "" {
+		return "", fmt.Errorf("no text content found in PDF")
+	}
+
+	return extractedText, nil
 }
 
 // extractFromDOCX extracts text from DOCX files (placeholder - requires DOCX library)
@@ -171,6 +207,8 @@ func (ai *AIService) generateAnalysis(content string) (*AnalysisResult, error) {
 
 	// Create comprehensive prompt for medical analysis
 	prompt := ai.buildAnalysisPrompt(content)
+	fmt.Println("--- AI Service: Prompt ---")
+	fmt.Println(prompt)
 
 	// Generate response from Gemini
 	resp, err := ai.model.GenerateContent(ctx, genai.Text(prompt))
@@ -189,6 +227,8 @@ func (ai *AIService) generateAnalysis(content string) (*AnalysisResult, error) {
 			responseText += string(txt)
 		}
 	}
+	fmt.Println("--- AI Service: Response ---")
+	fmt.Println(responseText)
 
 	// Parse the structured response
 	analysis, err := ai.parseAnalysisResponse(responseText)

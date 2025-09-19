@@ -1,0 +1,52 @@
+MEDICAL LABORATORY REPORT
+
+Patient: John Doe
+Date of Birth: 15/03/1985
+Date of Test: 18/09/2025
+Lab ID: LAB-2025-0918-001
+
+COMPLETE BLOOD COUNT (CBC)
+- Hemoglobin: 14.2 g/dL (Normal Range: 12.0-15.5 g/dL)
+- White Blood Cells: 7,800 cells/μL (Normal Range: 4,000-11,000 cells/μL)
+- Red Blood Cells: 4.5 million cells/μL (Normal Range: 4.2-5.4 million cells/μL)
+- Platelets: 285,000 cells/μL (Normal Range: 150,000-400,000 cells/μL)
+
+LIPID PROFILE
+- Total Cholesterol: 198 mg/dL (Normal Range: <200 mg/dL)
+- LDL Cholesterol: 125 mg/dL (Normal Range: <100 mg/dL)
+- HDL Cholesterol: 58 mg/dL (Normal Range: >40 mg/dL men, >50 mg/dL women)
+- Triglycerides: 145 mg/dL (Normal Range: <150 mg/dL)
+
+BLOOD GLUCOSE
+- Fasting Blood Sugar: 92 mg/dL (Normal Range: 70-100 mg/dL)
+- HbA1c: 5.4% (Normal Range: <5.7%)
+
+LIVER FUNCTION TESTS
+- ALT (Alanine Aminotransferase): 28 U/L (Normal Range: 7-35 U/L)
+- AST (Aspartate Aminotransferase): 24 U/L (Normal Range: 8-40 U/L)
+- Bilirubin Total: 0.8 mg/dL (Normal Range: 0.3-1.2 mg/dL)
+
+KIDNEY FUNCTION
+- Creatinine: 1.0 mg/dL (Normal Range: 0.7-1.3 mg/dL)
+- Blood Urea Nitrogen (BUN): 15 mg/dL (Normal Range: 7-20 mg/dL)
+
+VITAL SIGNS
+- Blood Pressure: 118/78 mmHg (Normal Range: <120/80 mmHg)
+- Heart Rate: 72 bpm (Normal Range: 60-100 bpm)
+- Body Mass Index: 24.1 kg/m² (Normal Range: 18.5-24.9 kg/m²)
+
+ADDITIONAL NOTES:
+- Patient reports regular exercise 3-4 times per week
+- No current medications
+- Non-smoker
+- Occasional alcohol consumption (1-2 drinks per week)
+
+PHYSICIAN RECOMMENDATIONS:
+1. Continue current healthy lifestyle
+2. Monitor LDL cholesterol levels - consider dietary modifications
+3. Maintain regular exercise routine
+4. Follow-up in 6 months for routine monitoring
+
+Dr. Sarah Johnson, MD
+Internal Medicine
+Medical License: MD-2018-4567
